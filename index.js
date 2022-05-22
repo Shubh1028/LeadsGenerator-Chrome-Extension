@@ -1,24 +1,49 @@
-// chrome://extensions/
+
 let myLeads = []
 const inputEl = document.getElementById("input-el")
 const inputBtn = document.getElementById("input-btn")
 const ulEl = document.getElementById("ul-el")
+const clrBtn = document.getElementById("dlt-btn");
+const tabBtn = document.getElementById("tab-btn");
+
+let getLocalStorage = JSON.parse(localStorage.getItem("myLeads"));
+
+if(getLocalStorage) {
+    myLeads = getLocalStorage;
+    render(myLeads);
+}
 
 inputBtn.addEventListener("click", function() {
     myLeads.push(inputEl.value)
     inputEl.value = ""
-    renderLeads()
+    localStorage.setItem("myLeads", JSON.stringify(myLeads));
+    render(myLeads)
 })
 
-function renderLeads() {
+tabBtn.addEventListener("click", function() {
+    chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+        myLeads.push(tabs[0].url);
+        localStorage.setItem("myLeads",JSON.stringify(myLeads));
+        render(myLeads);
+    });
+})
+
+clrBtn.addEventListener("click", function() {
+    localStorage.clear();
+    myLeads = [];
+    render(myLeads);
+})
+
+
+function render(leads) {
     let listItems = ""
-    for (let i = 0; i < myLeads.length; i++) {
+    for (let i = 0; i < leads.length; i++) {
         listItems += `
             <li>
-                <a target='_blank' href='${myLeads[i]}'>
-                    ${myLeads[i]}
+                <a target='_blank' href='${leads[i]}'>
+                    ${leads[i]}
                 </a>
-            </li>
+            </li>   
         `
     }
     ulEl.innerHTML = listItems  
